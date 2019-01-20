@@ -21,9 +21,16 @@ function validateThis(value) {
 }
 
 // Function that logs output to a text file.
-function print(event) {
-    // take in an event and append it to a text file.
-};
+function print(result) {
+    
+    fs.appendFile("log.txt", result, function(err) {
+
+        if (err) { return console.log(`Error writing to log: ${err}`)}
+
+        console.log(`Successfully logged result to log.txt!`);
+
+    });
+}
 
 inquirer.prompt([
     {
@@ -77,9 +84,10 @@ inquirer.prompt([
                         if (response.data.Response === "False") { return console.log("That doesn't appear to be a movie. Try again!") };
 
                         let result = 
-                            `\nTitle: ${response.data.Title}\nReleased: ${response.data.Released}\nIMDB Rating: ${response.data.Ratings[0].Value}\nRotten Tomatoes Rating: ${response.data.Ratings[1].Value}\nCountry: ${response.data.Country}\nLanguage: ${response.data.Language}\nPlot: ${response.data.Plot}\nCast: ${response.data.Actors}\n`;
+                            `\n############\nTitle: ${response.data.Title}\nReleased: ${response.data.Released}\nIMDB Rating: ${response.data.Ratings[0].Value}\nRotten Tomatoes Rating: ${response.data.Ratings[1].Value}\nCountry: ${response.data.Country}\nLanguage: ${response.data.Language}\nPlot: ${response.data.Plot}\nCast: ${response.data.Actors}\n############\n`;
 
                         console.log(result);
+                        print(result);
 
                         // console.log(`\nTitle: ${response.data.Title}`);
                         // console.log(`Released: ${response.data.Released}`);
