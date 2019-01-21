@@ -11,7 +11,7 @@ const spotify = keys.spotify;
 const omdb = keys.omdb;
 const bandsintown = keys.bandsintown;
 
-// Function that validates our entries.
+// Validate our Inquirer entries.
 function validateThis(value) {
     var pass = value.match(
         /([A-Za-z0-9-]+)/i
@@ -20,37 +20,57 @@ function validateThis(value) {
     return "Please enter a valid entry."
 }
 
-// Function that logs output to a text file.
+// Log our outputs to a text file.
 function print(result) {
-    
     fs.appendFile("log.txt", result, function(err) {
-
         if (err) { return console.log(`Error writing to log: ${err}`)}
-
         console.log(`Successfully logged result to log.txt!`);
-
     });
+}
+
+// Concatenate our API inputs.
+function concat(input) {
+    return input.split(" ").join("+");
+}
+
+// Capitalize user inputs.
+function capitalize(string) {
+
+    if (!string.includes(" ")) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    }
+
+    let capitalized = [];
+    let arr = string.split(" ");
+    
+    for (let i = 0; i < arr.length; i++) {
+        let temp = arr[i].charAt(0).toUpperCase() + arr[i].slice(1);
+        capitalized.push(temp);
+    }
+
+    return capitalized.join(" ");
+
 }
 
 inquirer.prompt([
     {
         type: "list",
-        message: "\nWhat do you want to know?",
+        message: "What do you want to know?",
         choices: [
             {
                 name: "I want to learn more about a song.",
                 value: "spotify"
             },
             {
-                name: "I want learn more about a movie.",
+                name: "I want to learn more about a movie.",
                 value: "omdb"
             },
             {
-                name: "I want learn about a musical artist's upcoming tour dates.",
+                name: "I want to learn about a band or musical artist's upcoming tour dates.",
                 value: "bandsintown"
             },
             {
-                name: "Surpise me!",
+                name: "Surpise me.",
                 value: "surprise"
             }
         ],
@@ -74,29 +94,22 @@ inquirer.prompt([
                 }
             ]).then(response => {
                 
-                const movie = response.omdbArg.split(" ").join("+");
-                const queryUrl = `http://www.omdbapi.com/?t=${movie}&y=&plot=short&apikey=${omdb.id}`;
+                const movie = capitalize(response.omdbArg);
+                const movieURL = concat(movie);
+                const queryUrl = `http://www.omdbapi.com/?t=${movieURL}&y=&plot=short&apikey=${omdb.id}`;
                 
                 axios
                     .get(queryUrl)
                     .then(response => {
             
-                        if (response.data.Response === "False") { return console.log("That doesn't appear to be a movie. Try again!") };
+                        // Leave if the response is false.
+                        if (response.data.Response === "False") { return console.log(`${movie} doesn't appear to be a movie. Try again!`) };
 
-                        let result = 
-                            `\n############\nTitle: ${response.data.Title}\nReleased: ${response.data.Released}\nIMDB Rating: ${response.data.Ratings[0].Value}\nRotten Tomatoes Rating: ${response.data.Ratings[1].Value}\nCountry: ${response.data.Country}\nLanguage: ${response.data.Language}\nPlot: ${response.data.Plot}\nCast: ${response.data.Actors}\n############\n`;
+                        // Otherwise compile result, display in console, and append to log.txt
+                        let result = `\n############\nTitle: ${response.data.Title}\nReleased: ${response.data.Released}\nIMDB Rating: ${response.data.Ratings[0].Value}\nRotten Tomatoes Rating: ${response.data.Ratings[1].Value}\nCountry: ${response.data.Country}\nLanguage: ${response.data.Language}\nPlot: ${response.data.Plot}\nCast: ${response.data.Actors}\n############\n`;
 
                         console.log(result);
                         print(result);
-
-                        // console.log(`\nTitle: ${response.data.Title}`);
-                        // console.log(`Released: ${response.data.Released}`);
-                        // console.log(`IMDB Rating: ${response.data.Ratings[0].Value}`);
-                        // console.log(`Rotten Tomatoes Rating: ${response.data.Ratings[1].Value}`);
-                        // console.log(`Country: ${response.data.Country}`);
-                        // console.log(`Language: ${response.data.Language}`);
-                        // console.log(`Plot: ${response.data.Plot}`);
-                        // console.log(`Cast: ${response.data.Actors}\n`);
 
                     })
                     .catch(error => {
@@ -108,7 +121,45 @@ inquirer.prompt([
             break;
 
         case "bandsintown":
-            console.log("bandsintown");
+            inquirer.prompt([
+                {
+                    type: "input",
+                    name: "bandsintownArg",
+                    message: "Which band or musical artist's upcoming tour dates do you want to see?",
+                    validate: validateThis
+                }
+            ]).then(response => {
+
+                const artist = capitalize(response.bandsintownArg);
+                const artistQuery = concat(response.bandsintownArg);
+                const queryUrl = `https://rest.bandsintown.com/artists/${artistQuery}/events?app_id=${bandsintown.id}`;
+
+                axios
+                    .get(queryUrl)
+                    .then(response => {
+
+                        let result = "";
+                        const events = response.data;
+
+                        if (!events.length) { return console.log(`Sorry, there aren't any upcoming shows for ${artist}.`)}
+                        
+                        // Loop through results and create entries.
+                        for (let i = 0; i < events.length; i++) {
+                            result += `\nArtist: ${artist}\nVenue: ${events[i].venue.name}\nLocation: ${events[i].venue.city}, ${events[i].venue.region}, ${events[i].venue.country}\nDate: ${moment(events[i].datetime).format('MMMM Do YYYY')}\n\n`;
+                        }
+                        console.log(result);
+                        print((result + "############"));
+
+                    })
+                    .catch(error => {
+                        if (error.message.includes("undefined")) {return console.log ("That artist doesn't exist. Try again!"); }
+
+                        if (error) { console.log(`Error: ${error.message}`); }
+                    });
+
+            }).catch(error => {
+                console.log("Hmm, something went wrong at some point. Try again!");
+            });
             break;
 
         case "surprise":
