@@ -1,1 +1,15 @@
-spotify-this-song,"I Want it That Way"
+spotify, Brother Sport
+omdb, Titanic
+spotify, Thriller
+spotify, I Want it That Way
+omdb, The Last of the Mohicans
+bandsintown, Kurt Vile
+bandsintown, Ariana Grande
+spotify, Born Under Punches (The Heat Goes On)
+bandsintown, Drake
+omdb, The Godfather
+bandsintown, The Rolling Stones
+omdb, Tron
+spotify, Son of a Preacher Man
+spotify, Party in the U.S.A.
+omdb, The Favourite
