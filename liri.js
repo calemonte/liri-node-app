@@ -11,7 +11,7 @@ const spotify = new nodeSpotify({ id: keys.spotify.id, secret: keys.spotify.secr
 const omdb = keys.omdb;
 const bandsintown = keys.bandsintown;
 
-// Validate our Inquirer entries.
+// Function that validates our Inquirer entries.
 function validateThis(value) {
     var pass = value.match(
         /([A-Za-z0-9-]+)/i
@@ -20,7 +20,7 @@ function validateThis(value) {
     return "Please enter a valid entry."
 }
 
-// Log our outputs to a text file.
+// Function that logs our outputs to a text file.
 function print(result) {
     fs.appendFile("log.txt", result, function(err) {
         if (err) { return console.log(`Error writing to log: ${err}`)}
@@ -28,12 +28,12 @@ function print(result) {
     });
 }
 
-// Concatenate our API inputs.
+// Function that concatenate our API inputs so there aren't blank spaces.
 function concat(input) {
     return input.split(" ").join("+");
 }
 
-// Capitalize user inputs.
+// Function that capitalizes user inputs.
 function capitalize(string) {
 
     if (!string.includes(" ")) {
@@ -50,6 +50,78 @@ function capitalize(string) {
 
     return capitalized.join(" ");
 
+}
+
+// Specialized function for querying Bands in Town API based on the result of an Inquirer response.
+function queryBandsInTown(response){
+
+    const artist = capitalize(response.bandsintownArg);
+    const artistQuery = concat(response.bandsintownArg);
+    const queryUrl = `https://rest.bandsintown.com/artists/${artistQuery}/events?app_id=${bandsintown.id}`;
+
+    axios
+        .get(queryUrl)
+        .then(response => {
+
+            let result = "";
+            const events = response.data;
+
+            if (!events.length) { return console.log(`Sorry, there aren't any upcoming shows for ${artist}.`)}
+            
+            // Loop through results and create entries.
+            for (let i = 0; i < events.length; i++) {
+                result += `\nArtist: ${artist}\nVenue: ${events[i].venue.name}\nLocation: ${events[i].venue.city}, ${events[i].venue.region}, ${events[i].venue.country}\nDate: ${moment(events[i].datetime).format('MMMM Do YYYY')}\n\n`;
+            }
+            console.log(result);
+            print((result + "\n############\n"));
+
+        })
+        .catch(error => {
+            if (error.message.includes("undefined")) {return console.log ("That artist doesn't exist. Try again!"); }
+
+            if (error) { console.log(`There was an error with that artist (Error: ${error.message}).`); }
+        });
+
+}
+
+// Specialized function for querying OMDB API based on the result of an Inquirer response.
+function queryOMDB(response) {
+    const movie = capitalize(response.omdbArg);
+    const movieURL = concat(movie);
+    const queryUrl = `http://www.omdbapi.com/?t=${movieURL}&y=&plot=short&apikey=${omdb.id}`;
+    
+    axios
+        .get(queryUrl)
+        .then(response => {
+
+            // Leave if the response is false.
+            if (response.data.Response === "False") { return console.log(`${movie} doesn't appear to be a movie. Try again!`) };
+
+            // Otherwise compile result, display in console, and append to log.txt
+            let result = `\nTitle: ${response.data.Title}\nReleased: ${response.data.Released}\nIMDB Rating: ${response.data.Ratings[0].Value}\nRotten Tomatoes Rating: ${response.data.Ratings[1].Value}\nCountry: ${response.data.Country}\nLanguage: ${response.data.Language}\nPlot: ${response.data.Plot}\nCast: ${response.data.Actors}\n`;
+
+            console.log(result);
+            print((result + "\n############\n"));
+
+        })
+        .catch(error => {
+            if (error) { console.log(`Error: ${error.message}.`); }
+        });
+}
+
+// Specialized function for querying Spotify API based on the result of an Inquirer response.
+function querySpotify(response) {
+    const song = capitalize(response.spotifyArg);
+
+    spotify.search({ type: 'track', query: song }, function(error, data) {
+        if (error) { return console.log(`There was an error with that song. (Error: ${error.message}). Try again!`) };
+
+        const result = `\nArtist: ${data.tracks.items[0].artists[0].name}\nTrack: ${data.tracks.items[0].name}\nAlbum: ${data.tracks.items[0].album.name}\nPreview Track: ${data.tracks.items[0].preview_url}\n`;
+
+        console.log(result);
+        print((result + "\n############\n"));
+
+    });
 }
 
 inquirer.prompt([
@@ -78,9 +150,10 @@ inquirer.prompt([
     }
 ]).then(response => {
 
+    // Route prompts based on user selection.
     switch(response.command) {
 
-        // Spotify API call.
+        // Call Spotify API call with Inquirer prompt.
         case "spotify": 
             inquirer.prompt([
                 {
@@ -90,25 +163,13 @@ inquirer.prompt([
                     validate: validateThis
                 }
             ]).then(response => {
-                const song = capitalize(response.spotifyArg);
-                spotify.search({ type: 'track', query: song }, function(error, data) {
-                    if (error) { return console.log(`There was an error with that song: ${error}`) };
-
-                    if (data === "undefined") { return console.log("No songs found. Try again!") };
-
-                    const result = `\nArtist: ${data.tracks.items[0].artists[0].name}\nTrack: ${data.tracks.items[0].name}\nAlbum: ${data.tracks.items[0].album.name}\nPreview Track: ${data.tracks.items[0].preview_url}\n`;
-
-                    console.log(result);
-                    print((result + "\n############\n"));
-
-                });
-            
+                querySpotify(response);
             }).catch(error => {
-                console.log(`Hmmm, something went wrong (${error}). Try again!`);
+                console.log(`Hmmm, something went wrong (Error: ${error.message}). Try again!`);
             });
             break;
 
-        // OMDB API call.
+        // Call OMDB API with Inquirer prompt.
         case "omdb":
             inquirer.prompt([
                 {
@@ -118,34 +179,13 @@ inquirer.prompt([
                     validate: validateThis
                 }
             ]).then(response => {
-                
-                const movie = capitalize(response.omdbArg);
-                const movieURL = concat(movie);
-                const queryUrl = `http://www.omdbapi.com/?t=${movieURL}&y=&plot=short&apikey=${omdb.id}`;
-                
-                axios
-                    .get(queryUrl)
-                    .then(response => {
-            
-                        // Leave if the response is false.
-                        if (response.data.Response === "False") { return console.log(`${movie} doesn't appear to be a movie. Try again!`) };
-
-                        // Otherwise compile result, display in console, and append to log.txt
-                        let result = `\nTitle: ${response.data.Title}\nReleased: ${response.data.Released}\nIMDB Rating: ${response.data.Ratings[0].Value}\nRotten Tomatoes Rating: ${response.data.Ratings[1].Value}\nCountry: ${response.data.Country}\nLanguage: ${response.data.Language}\nPlot: ${response.data.Plot}\nCast: ${response.data.Actors}\n`;
-
-                        console.log(result);
-                        print((result + "\n############\n"));
-
-                    })
-                    .catch(error => {
-                        if (error) { console.log(`Error: ${error.message}`); }
-                    });
+                queryOMDB(response);
             }).catch(error => {
-                console.log("Hmm, something went wrong at some point. Try again!");
+                console.log(`Hmm, something went wrong (Error: ${error.message}). Try again!`);
             });
             break;
 
-        // Bands in Town API call.
+        // Call Bands in Town API with Inquirer prompt.
         case "bandsintown":
             inquirer.prompt([
                 {
@@ -155,36 +195,9 @@ inquirer.prompt([
                     validate: validateThis
                 }
             ]).then(response => {
-
-                const artist = capitalize(response.bandsintownArg);
-                const artistQuery = concat(response.bandsintownArg);
-                const queryUrl = `https://rest.bandsintown.com/artists/${artistQuery}/events?app_id=${bandsintown.id}`;
-
-                axios
-                    .get(queryUrl)
-                    .then(response => {
-
-                        let result = "";
-                        const events = response.data;
-
-                        if (!events.length) { return console.log(`Sorry, there aren't any upcoming shows for ${artist}.`)}
-                        
-                        // Loop through results and create entries.
-                        for (let i = 0; i < events.length; i++) {
-                            result += `\nArtist: ${artist}\nVenue: ${events[i].venue.name}\nLocation: ${events[i].venue.city}, ${events[i].venue.region}, ${events[i].venue.country}\nDate: ${moment(events[i].datetime).format('MMMM Do YYYY')}\n\n`;
-                        }
-                        console.log(result);
-                        print((result + "\n############\n"));
-
-                    })
-                    .catch(error => {
-                        if (error.message.includes("undefined")) {return console.log ("That artist doesn't exist. Try again!"); }
-
-                        if (error) { console.log(`Error: ${error.message}`); }
-                    });
-
+                queryBandsInTown(response);
             }).catch(error => {
-                console.log("Hmm, something went wrong at some point. Try again!");
+                console.log(`Hmm, something went wrong (Error: ${error.message}). Try again!`);
             });
             break;
 
@@ -193,10 +206,12 @@ inquirer.prompt([
             console.log("surprise");
             break;
 
-        // Default resolves to a note about trying again.
+        // Resolve to a note about trying again if nothing is somehow selected.
         default:
-            return console.log("Hmmm, something went wrong. Try again");
+            return console.log("Hmmm, something went wrong. Try again!");
             
     } // End Inquirer switch.
    
+}).catch(error => {
+    console.log(`Hmmm, something went wrong (Error: ${error.message}). Try again!`);
 }); // End Inquirer entry prompt.
