@@ -5,9 +5,9 @@ const keys = require("./keys.js");
 const fs = require("fs");
 const axios = require("axios");
 const nodeSpotify = require("node-spotify-api");
+const spotify = new nodeSpotify({ id: keys.spotify.id, secret: keys.spotify.secret });
 const moment = require("moment");
 const inquirer = require("inquirer");
-const spotify = new nodeSpotify({ id: keys.spotify.id, secret: keys.spotify.secret });
 const omdb = keys.omdb;
 const bandsintown = keys.bandsintown;
 
