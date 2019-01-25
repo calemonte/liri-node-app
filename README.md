@@ -38,7 +38,7 @@ Based on your choice, you will receive some data about a song, movie, or band yo
 - Surprise Me.
     - Randomly pulls a command from the `random.txt` file. If you want to add a random item to the list, enter it in the pattern of 
     
-    `spotify|omdb|bandsintown , song|movie|artist`
+    `spotify|omdb|bandsintown, song|movie|artist`
     
     As in 
     
