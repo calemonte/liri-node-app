@@ -1,6 +1,7 @@
 /* 
 This file contains utility functions for the main app file, liri.js.
 */
+'use strict';
 
 const fs = require("fs");
 
