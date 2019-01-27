@@ -7,6 +7,16 @@ Clone the repository to your machine. Download and install the dependencies.
 
 `npm install`
 
+Create a .env file to store your API keys for Spotify, OMDB, and Bands in Town. Format the file as such:
+
+`SPOTIFY_ID=your id here`
+
+`SPOTIFY_SECRET=your secret here`
+
+`OMDB_ID=your key here`
+
+`BANDSINTOWN_ID=your key here`
+
 # Usage
 
 Navigate to the repository. In the command line, start the application. 
@@ -60,4 +70,4 @@ Based on your choice, you will receive some data about a song, movie, or band yo
 
 # Contribute
 
-This was built as part of a coding class, but if you are interested in contributing, feel free to open a pull request from a new branch. 
+This was built by Kenny Whitebloom (github.com/calemonte) as part of a coding class, but if you are interested in contributing, feel free to open a pull request from a new branch.
