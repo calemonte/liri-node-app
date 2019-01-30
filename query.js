@@ -11,7 +11,7 @@ const nodeSpotify = require("node-spotify-api");
 const moment = require("moment");
 
 // Specialized function for querying Bands in Town API based on the result of an Inquirer response.
-function queryBandsInTown(response){
+function queryBandsInTown(response) {
 
     const bandsintown = keys.bandsintown;
     // If the response is coming from the OMDB Inquirer prompt (ie, it has a 'omdbArg' key-value pair), assign 'movie' based on the returned response. Otherwise it's coming from the 'surprise' command, so assign the variable to response as is.
@@ -26,7 +26,9 @@ function queryBandsInTown(response){
             let result = "";
             const events = response.data;
 
-            if (!events.length) { return console.log(`Sorry, there aren't any upcoming shows for ${artist}.`) }
+            if (!events.length) { 
+                return console.log(`Sorry, there aren't any upcoming shows for ${artist}.`); 
+            }
             
             // Loop through results and create entries on a new line.
             for (let i = 0; i < events.length; i++) {
@@ -38,9 +40,13 @@ function queryBandsInTown(response){
 
         })
         .catch(error => {
-            if (error.message.includes("undefined")) { return console.log ("That artist doesn't exist. Try again!"); }
+            if (error.message.includes("undefined")) { 
+                return console.log ("That artist doesn't exist. Try again!"); 
+            }
 
-            if (error) { console.log(`There was an error with that artist (Error: ${error.message}).`); }
+            if (error) { 
+                console.log(`There was an error with that artist (Error: ${error.message}).`); 
+            }
         });
 
 }
@@ -59,7 +65,9 @@ function queryOMDB(response) {
         .then(function(response) {
 
             // Leave if the response is false.
-            if (response.data.Response === "False") { return console.log(`${movie} doesn't appear to be a movie. Try again!`) };
+            if (response.data.Response === "False") { 
+                return console.log(`${movie} doesn't appear to be a movie. Try again!`); 
+            }
 
             // Otherwise create entries on new lines.
             let result = `\nTitle: ${response.data.Title}\nReleased: ${response.data.Released}\nIMDB Rating: ${response.data.Ratings[0].Value}\nRotten Tomatoes Rating: ${response.data.Ratings[1].Value}\nCountry: ${response.data.Country}\nLanguage: ${response.data.Language}\nPlot: ${response.data.Plot}\nCast: ${response.data.Actors}\n`;
@@ -69,7 +77,9 @@ function queryOMDB(response) {
 
         })
         .catch(error => {
-            if (error) { console.log(`Error: ${error.message}.`); }
+            if (error) { 
+                console.log(`Error: ${error.message}.`); 
+            }
         });
 
 }
@@ -77,14 +87,16 @@ function queryOMDB(response) {
 // Specialized function for querying Spotify API based on the result of an Inquirer response.
 function querySpotify(response) {
 
-    const spotify = new nodeSpotify({ id: keys.spotify.id, secret: keys.spotify.secret });
+    const spotify = new nodeSpotify( { id: keys.spotify.id, secret: keys.spotify.secret } );
     // If the response is coming from the Spotify Inquirer prompt (ie, it has a 'spotiftyArg' key-value pair), assign 'song' based on the returned response. Otherwise it's coming from the 'surprise' command, so assign the variable to the response is.
     const song = (response.spotifyArg) ? helpers.capitalize(response.spotifyArg) : helpers.capitalize(response);
 
     spotify.search({ type: 'track', query: song }, function(error, data) {
 
         // Leave if the response is false.
-        if (error) { return console.log(`There was an error with that song. (Error: ${error.message}). Try again!`) };
+        if (error) { 
+            return console.log(`There was an error with that song. (Error: ${error.message}). Try again!`); 
+        }
 
         // Otherwise construct result on new lines.
         let result = `\nArtist: ${data.tracks.items[0].artists[0].name}\nTrack: ${data.tracks.items[0].name}\nAlbum: ${data.tracks.items[0].album.name}\n`;
@@ -107,7 +119,9 @@ function querySuprise() {
     // Read the text file.
     fs.readFile("random.txt", "utf8", function(error, data) {
 
-        if (error) { return console.log(`There was an error reading the file (Error: ${error})`); }
+        if (error) { 
+            return console.log(`There was an error reading the file (Error: ${error})`); 
+        }
         
         const arr1 = data.split("\n");
         const randomSelection = arr1[Math.floor(Math.random() * arr1.length)];

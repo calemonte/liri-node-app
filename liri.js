@@ -17,16 +17,13 @@ inquirer.prompt([
             {
                 name: "I want to learn more about a song.",
                 value: "spotify"
-            },
-            {
+            }, {
                 name: "I want to learn more about a movie.",
                 value: "omdb"
-            },
-            {
+            }, {
                 name: "I want to learn about a band or musical artist's upcoming tour dates.",
                 value: "bandsintown"
-            },
-            {
+            }, {
                 name: "Surpise me.",
                 value: "surprise"
             }
@@ -99,7 +96,5 @@ inquirer.prompt([
    
 })
 .catch(error => {
-
     console.log(`Hmmm, something went wrong (Error: ${error.message}). Try again!`);
-    
 }); // End Inquirer entry prompt.

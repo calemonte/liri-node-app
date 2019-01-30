@@ -12,8 +12,9 @@ function validateThis(value) {
         /([A-Za-z0-9-]+)/i
     );
     
-    if (pass) { return true; }
-    return "Please enter a valid entry."
+    if (pass) return true;
+    
+    return "Please enter a valid entry.";
 
 }
 
@@ -21,7 +22,7 @@ function validateThis(value) {
 function print(result) {
 
     fs.appendFile("log.txt", result, function(err) {
-        if (err) { return console.log(`Error writing to log: ${err}`) }
+        if (err) return console.log(`Error writing to log: ${err}`);
     });
 
 }
