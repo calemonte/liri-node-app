@@ -11,13 +11,12 @@ Clone the repository to your machine. Download and install the dependencies.
 
 Create a .env file to store your API keys for Spotify, OMDB, and Bands in Town. Format the file as such:
 
-`SPOTIFY_ID=your id here`
-
-`SPOTIFY_SECRET=your secret here`
-
-`OMDB_ID=your key here`
-
-`BANDSINTOWN_ID=your key here`
+```
+SPOTIFY_ID=your id here
+SPOTIFY_SECRET=your secret here
+OMDB_ID=your key here
+BANDSINTOWN_ID=your key here
+```
 
 # Usage
 
