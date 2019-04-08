@@ -1,3 +1,5 @@
+![The first LIRI screen.](./assets/liri-banner.png  "The first LIRI screen")
+
 # LIRI
 LIRI (_Language_ Interpretation and Recognition Interface) is a CLI Node.js app that searches Spotify for songs, Bands in Town for concerts, and OMDB for movies using an easy-to-use Inquirer interface.
 
