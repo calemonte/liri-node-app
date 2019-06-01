@@ -17,10 +17,10 @@
   },
   "homepage": "https://github.com/calemonte/liri-node-app#readme",
   "dependencies": {
-    "axios": "^0.18.0",
+    "axios": "^0.18.1",
     "dotenv": "^6.2.0",
-    "inquirer": "^6.2.1",
-    "moment": "^2.23.0",
-    "node-spotify-api": "^1.0.7"
+    "inquirer": "^6.3.1",
+    "moment": "^2.24.0",
+    "node-spotify-api": "^1.1.1"
   }
 }
